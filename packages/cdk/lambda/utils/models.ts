@@ -723,7 +723,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseOutputText: extractConverseOutputText,
     extractConverseStreamOutputText: extractConverseStreamOutputText,
   },
-    'ai21.jamba-instruct-v1:0': {
+    'ai21.j2-ultra-v1': {
     promptTemplate: JAMBA_PROMPT,
     createBodyText: createBodyTextJamba,
     extractOutputText: extractOutputTextJamba,
