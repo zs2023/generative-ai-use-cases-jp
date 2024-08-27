@@ -702,9 +702,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     defaultParams: COMMANDR_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
-    createConverseStreamCommandInput: createConverseStreamCommandInputWithoutSystemContext,
     extractConverseOutputText: extractConverseOutputText,
-    extractConverseStreamOutputText: extractConverseStreamOutputText,
   },
 };
 
