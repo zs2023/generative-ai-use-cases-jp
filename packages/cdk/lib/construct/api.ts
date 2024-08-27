@@ -97,6 +97,7 @@ export class Api extends Construct {
       'mistral.mistral-large-2407-v1:0',
       'cohere.command-r-v1:0',
       'cohere.command-r-plus-v1:0',
+      'ai21.j2-ultra-v1',
     ];
     const multiModalModelIds = [
       'anthropic.claude-3-5-sonnet-20240620-v1:0',
