@@ -4,7 +4,6 @@ import {
   Model,
   PromptTemplate,
   StableDiffusionParams,
-  JambaParams,
   TitanImageParams,
   UnrecordedMessage,
   ConverseInferenceParams,
@@ -129,6 +128,16 @@ const USECASE_DEFAULT_PARAMS: UsecaseConverseInferenceParams = {
   },
 };
 
+const JAMBA_DEFAULT_PARAMS: ConverseInferenceParams = {
+  max_tokens: 4096,
+  temperature: 0.3,
+  top_p: 0.999,
+  n: 1,
+  frequency_penalty: 0,
+  presence_penalty: 0,
+  stop: [],
+};
+
 // guardrail 設定
 const createGuardrailConfig = (): GuardrailConverseConfigParams | undefined => {
   if (
@@ -159,23 +168,6 @@ const createGuardrailStreamConfig = ():
     };
   }
   return undefined;
-};
-
-const JAMBA_DEFAULT_PARAMS: JambaParams = {
-  max_tokens: 4096,
-  temperature: 0.3,
-  top_p: 0.999,
-  n: 1,
-  frequency_penalty: 0,
-  presence_penalty: 0,
-  stop: [],
-};
-
-export type JambaParamsUsecases = Record<string, JambaParams>;
-const JAMBA_USECASE_PARAMS: JambaParamsUsecases = {
-  '/rag': {
-    temperature: 0.0,
-  },
 };
 
 // ID変換ルール
@@ -374,23 +366,6 @@ const extractConverseStreamOutputText = (
   return '';
 };
 
-const createBodyTextJamba = (messages: UnrecordedMessage[], id: string) => {
-  const body: JambaParams = {
-    messages: messages.map((message) => {
-      return {
-        role: message.role,
-        content: message.content,
-      };
-    }),
-    ...JAMBA_DEFAULT_PARAMS,
-    ...JAMBA_USECASE_PARAMS[normalizeId(id)],
-  };
-  return JSON.stringify(body);
-};
-
-const extractOutputTextJamba = (body: BedrockResponse): string => {
-  return body.choices[0].message.content;
-};
 
 const createBodyImageStableDiffusion = (params: GenerateImageParams) => {
   let body: StableDiffusionParams = {
@@ -724,9 +699,12 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutputText: extractConverseStreamOutputText,
   },
     'ai21.j2-ultra-v1': {
-    promptTemplate: JAMBA_PROMPT,
-    createBodyText: createBodyTextJamba,
-    extractOutputText: extractOutputTextJamba,
+    defaultParams: COMMANDR_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInputWithoutSystemContext,
+    extractConverseOutputText: extractConverseOutputText,
+    extractConverseStreamOutputText: extractConverseStreamOutputText,
   },
 };
 
