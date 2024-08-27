@@ -4,6 +4,7 @@ import {
   Model,
   PromptTemplate,
   StableDiffusionParams,
+  JambaParams,
   TitanImageParams,
   UnrecordedMessage,
   ConverseInferenceParams,
@@ -50,6 +51,18 @@ const LLAMA2_PROMPT: PromptTemplate = {
   assistant: ' [/INST] {}</s><s>[INST] ',
   system: '<<SYS>>\n{}\n<</SYS>>\n\n',
   eosToken: '</s>',
+};
+
+// Jambaではプロンプトの前処理にPromptTemplateを使用していないが、
+// BEDROCK_MODELSで指定が必要なためダミーで作成しています
+const JAMBA_PROMPT: PromptTemplate = {
+  prefix: '',
+  suffix: '',
+  join: '',
+  user: '',
+  assistant: '',
+  system: '',
+  eosToken: '',
 };
 
 const BILINGUAL_RINNA_PROMPT: PromptTemplate = {
@@ -146,6 +159,23 @@ const createGuardrailStreamConfig = ():
     };
   }
   return undefined;
+};
+
+const JAMBA_DEFAULT_PARAMS: JambaParams = {
+  max_tokens: 4096,
+  temperature: 0.3,
+  top_p: 0.999,
+  n: 1,
+  frequency_penalty: 0,
+  presence_penalty: 0,
+  stop: [],
+};
+
+export type JambaParamsUsecases = Record<string, JambaParams>;
+const JAMBA_USECASE_PARAMS: JambaParamsUsecases = {
+  '/rag': {
+    temperature: 0.0,
+  },
 };
 
 // ID変換ルール
@@ -342,6 +372,24 @@ const extractConverseStreamOutputText = (
   }
 
   return '';
+};
+
+const createBodyTextJamba = (messages: UnrecordedMessage[], id: string) => {
+  const body: JambaParams = {
+    messages: messages.map((message) => {
+      return {
+        role: message.role,
+        content: message.content,
+      };
+    }),
+    ...JAMBA_DEFAULT_PARAMS,
+    ...JAMBA_USECASE_PARAMS[normalizeId(id)],
+  };
+  return JSON.stringify(body);
+};
+
+const extractOutputTextJamba = (body: BedrockResponse): string => {
+  return body.choices[0].message.content;
 };
 
 const createBodyImageStableDiffusion = (params: GenerateImageParams) => {
@@ -674,6 +722,11 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     createConverseStreamCommandInput: createConverseStreamCommandInput,
     extractConverseOutputText: extractConverseOutputText,
     extractConverseStreamOutputText: extractConverseStreamOutputText,
+  },
+    'ai21.jamba-instruct-v1:0': {
+    promptTemplate: JAMBA_PROMPT,
+    createBodyText: createBodyTextJamba,
+    extractOutputText: extractOutputTextJamba,
   },
 };
 
